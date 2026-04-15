@@ -352,7 +352,7 @@ export default function HomePage() {
               </button>
 
               {/* Native share (mobile) */}
-              {typeof navigator !== "undefined" && navigator.share && (
+              {typeof navigator !== "undefined" && !!navigator.share && (
                 <button
                   onClick={handleNativeShare}
                   title="Share"
