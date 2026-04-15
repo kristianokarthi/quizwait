@@ -33,7 +33,7 @@ function useCountdown(targetDate: Date): CountdownTime {
   return time
 }
 
-const LAUNCH_DATE = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+const LAUNCH_DATE = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000)
 
 const AUDIENCE_CARDS = [
   { icon: <GraduationCap className="w-4 h-4" />, label: "Students", context: "Syllabus-based Q&A", bg: "bg-violet-500/10 border-violet-500/20" },
