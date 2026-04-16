@@ -11,10 +11,11 @@ export async function sendWelcomeEmail(
   position: number,
   referralCode: string
 ) {
-  const referralUrl = `${APP_URL}/ref?r=${referralCode}`
-  const isTop50 = position <= 50
+  try {
+    const referralUrl = `${APP_URL}/ref?r=${referralCode}`
+    const isTop50 = position <= 50
 
-  await resend.emails.send({
+    await resend.emails.send({
     from: FROM_EMAIL,
     to: email,
     subject: `You're #${position} on the QuizWait list 🧠`,
@@ -69,7 +70,10 @@ export async function sendWelcomeEmail(
 
       </div>
     `,
-  })
+    })
+  } catch (err) {
+    console.error('Welcome email send error:', err)
+  }
 }
 
 // Position change email — sent when someone's position changes
@@ -79,15 +83,16 @@ export async function sendPositionChangeEmail(
   newPosition: number,
   referralCode: string
 ) {
-  const referralUrl = `${APP_URL}/ref?r=${referralCode}`
-  const moved = oldPosition - newPosition
-  const isTop50 = newPosition <= 50
+  try {
+    const referralUrl = `${APP_URL}/ref?r=${referralCode}`
+    const moved = oldPosition - newPosition
+    const isTop50 = newPosition <= 50
 
-  await resend.emails.send({
-    from: FROM_EMAIL,
-    to: email,
-    subject: `Your position changed — you're now #${newPosition} 📈`,
-    html: `
+    await resend.emails.send({
+      from: FROM_EMAIL,
+      to: email,
+      subject: `Your position changed — you're now #${newPosition} 📈`,
+      html: `
       <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px;background:#0a0a0f;color:#ffffff;border-radius:16px;">
 
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:24px;">
@@ -134,5 +139,8 @@ export async function sendPositionChangeEmail(
 
       </div>
     `,
-  })
+    })
+  } catch (err) {
+    console.error('Position change email send error:', err)
+  }
 }
