@@ -57,9 +57,10 @@ export default function HomePage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const [copied, setCopied] = useState(false)
+  const [aiMessage, setAiMessage] = useState<string>("")
+  const [aiLoading, setAiLoading] = useState<boolean>(false)
   const countdown = useCountdown(LAUNCH_DATE)
 
-  // Read referral code from URL if someone opened a referral link
   const [referredBy, setReferredBy] = useState<string>("")
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
@@ -68,13 +69,28 @@ export default function HomePage() {
       setReferredBy(ref)
       localStorage.setItem("referredBy", ref)
     } else {
-      // Fallback: check localStorage if they landed via redirect
       const stored = localStorage.getItem("referredBy")
       if (stored) setReferredBy(stored)
     }
   }, [])
 
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || ""
+
+  const fetchAiMessage = (position: number) => {
+    setAiLoading(true)
+    fetch(`${baseUrl}/api/generate-message`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ position }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        console.log("AI message data:", data)
+        if (data.message) setAiMessage(data.message)
+      })
+      .catch(() => {})
+      .finally(() => setAiLoading(false))
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -99,13 +115,13 @@ export default function HomePage() {
         return
       }
 
-      // Already registered — show their existing position
       if (data.alreadyRegistered) {
         setError("")
         setAlreadyRegistered(true)
         setQueuePosition(data.position)
         setReferralCode(data.referralCode)
         setSubmitted(true)
+        fetchAiMessage(data.position)
         return
       }
 
@@ -113,6 +129,7 @@ export default function HomePage() {
       setReferralCode(data.referralCode)
       setSubmitted(true)
       localStorage.removeItem("referredBy")
+      fetchAiMessage(data.position)
 
     } catch {
       setError("Network error. Please check your connection and try again.")
@@ -298,6 +315,27 @@ export default function HomePage() {
               )}
             </div>
 
+            {/* AI Welcome Message */}
+            {(aiLoading || aiMessage) && (
+              <div className="rounded-xl bg-violet-500/8 border border-violet-500/20 px-4 py-3.5">
+                {aiLoading ? (
+                  <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 border-2 border-violet-500/30 border-t-violet-500 rounded-full animate-spin shrink-0" />
+                    <p className="text-xs text-white/40">AI is crafting your welcome message...</p>
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-1">
+                    <p className="text-[10px] text-violet-400/70 uppercase tracking-widest font-semibold">
+                      QuizWait AI
+                    </p>
+                    <p className="text-xs text-white/70 leading-relaxed italic">
+                      &ldquo;{aiMessage}&rdquo;
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Top 50 prize */}
             <div className="rounded-xl bg-amber-500/8 border border-amber-500/20 px-4 py-3.5 flex items-center gap-3">
               <Crown className="w-5 h-5 text-amber-400 shrink-0" />
@@ -326,7 +364,6 @@ export default function HomePage() {
 
             {/* Share row */}
             <div className="flex gap-2">
-              {/* Copy referral link */}
               <button
                 onClick={handleCopy}
                 className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-violet-600 to-cyan-600 hover:from-violet-500 hover:to-cyan-500 rounded-xl px-4 py-3.5 transition-all duration-200 active:scale-95"
@@ -340,7 +377,6 @@ export default function HomePage() {
                 </span>
               </button>
 
-              {/* WhatsApp share */}
               <button
                 onClick={handleWhatsApp}
                 title="Share on WhatsApp"
@@ -351,7 +387,6 @@ export default function HomePage() {
                 </svg>
               </button>
 
-              {/* Native share (mobile) */}
               {typeof navigator !== "undefined" && !!navigator.share && (
                 <button
                   onClick={handleNativeShare}
@@ -373,7 +408,7 @@ export default function HomePage() {
         )}
       </section>
 
-      {/* Top 50 Prize Banner — visible to everyone */}
+      {/* Top 50 Prize Banner */}
       <section className="relative z-10 max-w-4xl mx-auto px-4 pb-10">
         <div className="rounded-2xl border border-amber-500/25 bg-gradient-to-br from-amber-500/8 to-orange-500/5 p-6 sm:p-8 flex flex-col sm:flex-row items-center gap-6">
           <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-xl shadow-amber-500/25 shrink-0">
@@ -403,24 +438,9 @@ export default function HomePage() {
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {[
-            {
-              icon: <TrendingUp className="w-5 h-5" />,
-              color: "from-violet-500 to-purple-500",
-              title: "Live Queue",
-              desc: "Your position updates in real time. Every new referral from anyone in the queue reshuffles the order.",
-            },
-            {
-              icon: <Zap className="w-5 h-5" />,
-              color: "from-blue-500 to-cyan-500",
-              title: "10 Spots Per Referral",
-              desc: "Every friend who signs up using your link moves you 10 positions forward instantly.",
-            },
-            {
-              icon: <Mail className="w-5 h-5" />,
-              color: "from-emerald-500 to-teal-500",
-              title: "Email Alerts",
-              desc: "We notify you by email whenever your position changes — so you never miss a move.",
-            },
+            { icon: <TrendingUp className="w-5 h-5" />, color: "from-violet-500 to-purple-500", title: "Live Queue", desc: "Your position updates in real time. Every new referral from anyone in the queue reshuffles the order." },
+            { icon: <Zap className="w-5 h-5" />, color: "from-blue-500 to-cyan-500", title: "10 Spots Per Referral", desc: "Every friend who signs up using your link moves you 10 positions forward instantly." },
+            { icon: <Mail className="w-5 h-5" />, color: "from-emerald-500 to-teal-500", title: "Email Alerts", desc: "We notify you by email whenever your position changes — so you never miss a move." },
           ].map((item, i) => (
             <div key={i} className="rounded-2xl bg-white/3 border border-white/8 p-5 flex flex-col gap-3">
               <div className={`w-9 h-9 rounded-xl bg-gradient-to-br ${item.color} flex items-center justify-center text-white shadow-lg`}>

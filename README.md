@@ -16,11 +16,18 @@ Built for students, job seekers, career switchers, and self-learners who want ac
 
 ## How It Works
 
-1. Enter your email → get your live queue position
-2. Share your referral link → each referral moves you **10 spots up**
-3. Top 50 at launch → win 3 years free AI subscription of your choice
-4. Refer 3 / 6 / 10 friends → unlock 1 / 3 / 6 months free subscription
-5. After launch → pass an AI assessment on your track → earn real API credits
+1. Enter your email → get your live queue position instantly
+2. An AI (powered by Groq + Llama 3.3) generates a personalized welcome message based on your position
+3. Share your referral link → each referral moves you **10 spots up**
+4. Top 50 at launch → win 3 years free AI subscription of your choice
+5. Refer 3 / 6 / 10 friends → unlock 1 / 3 / 6 months free subscription
+6. After launch → pass an AI assessment on your track → earn real API credits
+
+---
+
+## AI Integration
+
+When a user joins the waitlist, a **free LLM (Llama 3.3 via Groq API)** generates a personalized welcome message in real time based on their queue position. Top 50 users get an energetic winning message. Others get an urgency-driven motivational push to share their referral link.
 
 ---
 
@@ -32,6 +39,7 @@ Built for students, job seekers, career switchers, and self-learners who want ac
 | Styling | Tailwind CSS |
 | Database | Neon Serverless PostgreSQL |
 | Email | Resend |
+| AI | Groq API — Llama 3.3 70B |
 | Deployment | Vercel |
 
 ---
@@ -51,6 +59,7 @@ npm run dev
 DATABASE_URL=
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 RESEND_API_KEY=
+GROQ_API_KEY=
 ```
 
 ---
@@ -71,10 +80,14 @@ CREATE TABLE waitlist (
 );
 ```
 
+> Position is never stored — calculated live via `RANK() OVER (ORDER BY score ASC)`
+
 ---
 
 ## AI Tools Used
 
-Used **Claude (Anthropic)** throughout — UI components, API logic, DB schema design, and debugging. Most valuable in the debugging loop where the score-based ranking approach emerged as a simpler alternative to position-shifting logic.
+Used **Claude (Anthropic)** throughout — UI components, API logic, DB schema, and debugging. **Groq API (Llama 3.3)** powers the live welcome message on signup. Most valuable AI use was in the debugging loop where the score-based ranking approach emerged as a simpler alternative to position-shifting logic.
 
 ---
+
+*Built in 2 days as a take-home assessment. Updated with AI welcome message feature based on team feedback.*
